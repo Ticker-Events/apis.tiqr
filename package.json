@@ -53,10 +53,9 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@types/tiqr": ">=1.0.0"
+    "@types/tiqr": "github:Ticker-Events/types.tiqr"
   },
   "devDependencies": {
-    "@types/tiqr": "file:../types.tiqr",
     "tsup": "^8.4.0",
     "typescript": "^5.8.2"
   },
