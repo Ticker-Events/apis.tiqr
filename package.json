@@ -40,12 +40,16 @@
   "files": [
     "dist",
     "docs",
-    "README.md"
+    "README.md",
+    "src",
+    "tsup.config.ts",
+    "tsconfig.json"
   ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {

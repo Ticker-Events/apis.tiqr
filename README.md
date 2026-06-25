@@ -4,11 +4,53 @@ TypeScript SDK for TiQR Store REST APIs. Connect to the TiQR backend from any Ne
 
 ## Install
 
+### From GitHub
+
+Both packages are installed from GitHub (not published to npm). Install `@types/tiqr` first, then `apis.tiqr`:
+
+```bash
+npm install github:Ticker-Events/types.tiqr github:Ticker-Events/apis.tiqr
+```
+
+Or add them to `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@types/tiqr": "github:Ticker-Events/types.tiqr",
+    "apis.tiqr": "github:Ticker-Events/apis.tiqr"
+  }
+}
+```
+
+Pin a branch, tag, or commit by appending `#ref`:
+
+```bash
+npm install github:Ticker-Events/apis.tiqr#main
+npm install github:Ticker-Events/apis.tiqr#v0.1.0
+```
+
+`apis.tiqr` builds automatically on install (`prepare` runs `npm run build`). `@types/tiqr` is a peer dependency for request/response types.
+
+**pnpm / yarn**
+
+```bash
+pnpm add github:Ticker-Events/types.tiqr github:Ticker-Events/apis.tiqr
+yarn add github:Ticker-Events/types.tiqr github:Ticker-Events/apis.tiqr
+```
+
+**Private repos** — use SSH or a personal access token:
+
+```bash
+npm install git+ssh://git@github.com/Ticker-Events/apis.tiqr.git
+npm install git+https://<token>@github.com/Ticker-Events/apis.tiqr.git
+```
+
+### From npm
+
 ```bash
 npm install apis.tiqr @types/tiqr
 ```
-
-`@types/tiqr` is a peer dependency for request/response types.
 
 ## Quick start
 
