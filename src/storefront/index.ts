@@ -2,6 +2,7 @@ import type { ApisHttpClient } from "../client/http-client.js";
 import type { ApisResult } from "../client/types.js";
 import type {
   TCart,
+  TCategory,
   TListResponse,
   TOrder,
   TProduct,
@@ -35,13 +36,13 @@ export const createStorefrontStoresApi = (http: ApisHttpClient) => ({
 });
 
 /**
- * Storefront product catalog endpoints.
+ * Storefront category endpoints.
  * @group storefront
  */
-export const createStorefrontProductsApi = (http: ApisHttpClient) => ({
+export const createStorefrontCategoriesApi = (http: ApisHttpClient) => ({
   /**
-   * List products for a store.
-   * @endpoint GET service/buyer/product/?store_id=
+   * List categories for a store.
+   * @endpoint GET service/buyer/store/{storeId}/category/
    * @auth None
    */
   list: ({
@@ -49,18 +50,58 @@ export const createStorefrontProductsApi = (http: ApisHttpClient) => ({
     limit,
     offset = 0,
   }: {
-    storeId: number;
+    storeId: number | string;
     limit?: number;
     offset?: number;
-  }): Promise<ApisResult<TListResponse<TProduct>>> =>
-    http.request<TListResponse<TProduct>>(
-      `service/buyer/product/?store_id=${storeId}&limit=${limit ?? http.pageSize}&offset=${offset}`,
+  }): Promise<ApisResult<TListResponse<TCategory>>> =>
+    http.request<TListResponse<TCategory>>(
+      `service/buyer/store/${storeId}/category/?limit=${limit ?? http.pageSize}&offset=${offset}`,
+      {
+        auth: false,
+        endpoint: "storefront.categories.list",
+        group: "storefront",
+      },
+    ),
+});
+
+/**
+ * Storefront product catalog endpoints.
+ * @group storefront
+ */
+export const createStorefrontProductsApi = (http: ApisHttpClient) => ({
+  /**
+   * List products for a store, optionally filtered by category.
+   * @endpoint GET service/buyer/product/?store_id=&category_id=
+   * @auth None
+   */
+  list: ({
+    storeId,
+    categoryId,
+    limit,
+    offset = 0,
+  }: {
+    storeId: number;
+    categoryId?: number;
+    limit?: number;
+    offset?: number;
+  }): Promise<ApisResult<TListResponse<TProduct>>> => {
+    const queryParams = new URLSearchParams({
+      store_id: String(storeId),
+      limit: String(limit ?? http.pageSize),
+      offset: String(offset),
+    });
+    if (categoryId !== undefined) {
+      queryParams.set("category_id", String(categoryId));
+    }
+    return http.request<TListResponse<TProduct>>(
+      `service/buyer/product/?${queryParams.toString()}`,
       {
         auth: false,
         endpoint: "storefront.products.list",
         group: "storefront",
       },
-    ),
+    );
+  },
 
   /**
    * Get product details.
@@ -299,6 +340,7 @@ export const createStorefrontAppointmentsApi = (http: ApisHttpClient) => ({
 
 export const createStorefrontApi = (http: ApisHttpClient) => ({
   stores: createStorefrontStoresApi(http),
+  categories: createStorefrontCategoriesApi(http),
   products: createStorefrontProductsApi(http),
   productOptions: createStorefrontProductOptionsApi(http),
   cart: createStorefrontCartApi(http),
