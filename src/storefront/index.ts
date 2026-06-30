@@ -33,7 +33,7 @@ export const createStorefrontStoresApi = (http: ApisHttpClient) => ({
    * @auth None
    */
   get: (storeId?: number | string): Promise<ApisResult<TStore>> =>
-    http.request<TStore>(`service/buyer/store/${resolveStoreId(http, storeId)}`, {
+    http.request<TStore>(`service/buyer/store/${resolveStoreId(http, storeId)}/`, {
       auth: false,
       endpoint: "storefront.stores.get",
       group: "storefront",
@@ -117,7 +117,7 @@ export const createStorefrontProductsApi = (http: ApisHttpClient) => ({
    * @auth None
    */
   get: (productId: number | string): Promise<ApisResult<TProductDetails>> =>
-    http.request<TProductDetails>(`service/buyer/product/${productId}`, {
+    http.request<TProductDetails>(`service/buyer/product/${productId}/`, {
       auth: false,
       endpoint: "storefront.products.get",
       group: "storefront",
@@ -135,7 +135,7 @@ export const createStorefrontProductOptionsApi = (http: ApisHttpClient) => ({
    * @auth None
    */
   get: (optionId: number | string): Promise<ApisResult<TProductOption>> =>
-    http.request<TProductOption>(`service/buyer/product-option/${optionId}`, {
+    http.request<TProductOption>(`service/buyer/product-option/${optionId}/`, {
       auth: false,
       endpoint: "storefront.productOptions.get",
       group: "storefront",
