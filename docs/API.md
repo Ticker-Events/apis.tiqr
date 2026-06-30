@@ -4,6 +4,8 @@ Full endpoint reference for `apis.tiqr`, grouped by **Shared**, **Storefront**, 
 
 All methods return `Promise<ApisResult<T>>`.
 
+Store-scoped methods accept an optional `storeId` when `defaultStoreId` is set on the client at creation. Per-call `storeId` always overrides the default. See [README](../README.md#single-store-site-optional).
+
 ---
 
 ## Shared

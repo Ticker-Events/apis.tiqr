@@ -69,6 +69,34 @@ export const tiqrServer = createApisClient({
 });
 ```
 
+### Single-store site (optional)
+
+For store-specific websites that always target one store, set `defaultStoreId` at client creation. Store-scoped APIs then omit `storeId` on each call:
+
+```typescript
+export const tiqrServer = createApisClient({
+  baseUrl: `${process.env.NEXT_PUBLIC_SELF_URL}/api/be`,
+  defaultStoreId: Number(process.env.NEXT_PUBLIC_STORE_ID),
+  getAccessToken,
+});
+
+// No storeId on each call
+await tiqrServer.storefront.products.list({ offset: 0 });
+await tiqrServer.storefront.categories.list();
+```
+
+Pass `storeId` on any call to override the default (e.g. multi-store apps like tiqr.store):
+
+```typescript
+await tiqrServer.storefront.products.list({ storeId: otherStore.id, offset: 0 });
+
+// Or scope storefront + admin APIs for a navigation context
+const storeApi = tiqrServer.forStore(selectedStore.id);
+await storeApi.storefront.products.list({ offset: 0 });
+```
+
+If neither `defaultStoreId` nor a per-call `storeId` is provided, store-scoped methods throw `ApisStoreIdRequiredError`.
+
 ### Client (browser components)
 
 ```typescript

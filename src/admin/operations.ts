@@ -1,4 +1,9 @@
 import type { ApisHttpClient } from "../client/http-client.js";
+import {
+  resolveStoreId,
+  resolveThreeArgStoreCall,
+  resolveTwoArgStoreCall,
+} from "../client/resolve-store-id.js";
 import type { ApisResult } from "../client/types.js";
 import type {
   TChatFile,
@@ -20,11 +25,13 @@ const ORDER_SORT_PARAMS: Record<string, string> = {
  * @group admin
  */
 export const createAdminOrdersApi = (http: ApisHttpClient) => ({
-  list: ({ storeId }: { storeId: number | string }): Promise<ApisResult<TListResponse<TOrder>>> =>
-    http.request<TListResponse<TOrder>>(`${ownerBase(storeId)}/order/`, {
+  list: ({ storeId }: { storeId?: number | string } = {}): Promise<ApisResult<TListResponse<TOrder>>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TListResponse<TOrder>>(`${ownerBase(id)}/order/`, {
       endpoint: "admin.orders.list",
       group: "admin",
-    }),
+    });
+  },
 
   listFiltered: ({
     storeId,
@@ -33,19 +40,20 @@ export const createAdminOrdersApi = (http: ApisHttpClient) => ({
     limit,
     offset = 0,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     filters?: Record<string, string[]>;
     sortBy?: TSortOptionsKey | string;
     limit?: number;
     offset?: number;
-  }): Promise<ApisResult<TListResponse<TOrder>>> => {
+  } = {}): Promise<ApisResult<TListResponse<TOrder>>> => {
+    const id = resolveStoreId(http, storeId);
     const queryParams = new URLSearchParams();
     Object.entries(filters).forEach(([key, values]) => {
       queryParams.append(key, values.join(","));
     });
     const sortParam = ORDER_SORT_PARAMS[sortBy] ?? ORDER_SORT_PARAMS.newest_first;
     const qs = `limit=${limit ?? http.pageSize}&offset=${offset}&${queryParams.toString()}&sort_by=${sortParam}`;
-    return http.request<TListResponse<TOrder>>(`${ownerBase(storeId)}/order/?${qs}`, {
+    return http.request<TListResponse<TOrder>>(`${ownerBase(id)}/order/?${qs}`, {
       endpoint: "admin.orders.listFiltered",
       group: "admin",
     });
@@ -55,57 +63,65 @@ export const createAdminOrdersApi = (http: ApisHttpClient) => ({
     storeId,
     orderId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     orderId: number | string;
-  }): Promise<ApisResult<TOrder>> =>
-    http.request<TOrder>(`${ownerBase(storeId)}/order/${orderId}/`, {
+  }): Promise<ApisResult<TOrder>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TOrder>(`${ownerBase(id)}/order/${orderId}/`, {
       endpoint: "admin.orders.get",
       group: "admin",
-    }),
+    });
+  },
 
   update: ({
     storeId,
     orderId,
     payload,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     orderId: number | string;
     payload: unknown;
-  }): Promise<ApisResult<TOrder>> =>
-    http.request<TOrder>(`${ownerBase(storeId)}/order/${orderId}/`, {
+  }): Promise<ApisResult<TOrder>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TOrder>(`${ownerBase(id)}/order/${orderId}/`, {
       method: "PATCH",
       body: payload,
       endpoint: "admin.orders.update",
       group: "admin",
-    }),
+    });
+  },
 
   reschedule: ({
     storeId,
     payload,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     payload: unknown;
-  }): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/appointment/reschedule/`, {
+  }): Promise<ApisResult<unknown>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request(`${ownerBase(id)}/appointment/reschedule/`, {
       method: "POST",
       body: payload,
       endpoint: "admin.orders.reschedule",
       group: "admin",
-    }),
+    });
+  },
 
   validateReschedule: ({
     storeId,
     payload,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     payload: unknown;
-  }): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/appointment/validate-reschedule/`, {
+  }): Promise<ApisResult<unknown>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request(`${ownerBase(id)}/appointment/validate-reschedule/`, {
       method: "POST",
       body: payload,
       endpoint: "admin.orders.validateReschedule",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -118,28 +134,32 @@ export const createAdminAppointmentsApi = (http: ApisHttpClient) => ({
     month,
     year,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     month: string | number;
     year: string | number;
-  }): Promise<ApisResult<unknown[]>> =>
-    http.request<unknown[]>(
-      `${ownerBase(storeId)}/appointment/?month=${month}&year=${year}`,
+  }): Promise<ApisResult<unknown[]>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<unknown[]>(
+      `${ownerBase(id)}/appointment/?month=${month}&year=${year}`,
       { endpoint: "admin.appointments.list", group: "admin" },
-    ),
+    );
+  },
 
   create: ({
     storeId,
     payload,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     payload: unknown;
-  }): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/appointment/`, {
+  }): Promise<ApisResult<unknown>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request(`${ownerBase(id)}/appointment/`, {
       method: "POST",
       body: payload,
       endpoint: "admin.appointments.create",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -147,19 +167,26 @@ export const createAdminAppointmentsApi = (http: ApisHttpClient) => ({
  * @group admin
  */
 export const createAdminAvailabilityApi = (http: ApisHttpClient) => ({
-  getLatestConfig: (storeId: number | string): Promise<ApisResult<TSchedule>> =>
-    http.request<TSchedule>(`${ownerBase(storeId)}/availability/latest-conf/`, {
+  getLatestConfig: (storeId?: number | string): Promise<ApisResult<TSchedule>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TSchedule>(`${ownerBase(id)}/availability/latest-conf/`, {
       endpoint: "admin.availability.getLatestConfig",
       group: "admin",
-    }),
+    });
+  },
 
-  save: (storeId: number | string, payload: unknown): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/availability/`, {
+  save: (
+    storeIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, value } = resolveTwoArgStoreCall(http, storeIdOrPayload, payload);
+    return http.request(`${ownerBase(storeId)}/availability/`, {
       method: "POST",
-      body: payload,
+      body: value,
       endpoint: "admin.availability.save",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -172,14 +199,16 @@ export const createAdminDashboardApi = (http: ApisHttpClient) => ({
     startDate,
     endDate,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     startDate: string;
     endDate: string;
-  }): Promise<ApisResult<{ status: string; count: number }[]>> =>
-    http.request<{ status: string; count: number }[]>(
-      `${ownerBase(storeId)}/summary/?start_date=${startDate}&end_date=${endDate}`,
+  }): Promise<ApisResult<{ status: string; count: number }[]>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<{ status: string; count: number }[]>(
+      `${ownerBase(id)}/summary/?start_date=${startDate}&end_date=${endDate}`,
       { endpoint: "admin.dashboard.orderSummary", group: "admin" },
-    ),
+    );
+  },
 });
 
 /**
@@ -187,54 +216,91 @@ export const createAdminDashboardApi = (http: ApisHttpClient) => ({
  * @group admin
  */
 export const createAdminFaqApi = (http: ApisHttpClient) => ({
-  list: (storeId: number | string): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/faq/`, {
+  list: (storeId?: number | string): Promise<ApisResult<unknown>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request(`${ownerBase(id)}/faq/`, {
       cache: "no-store",
       endpoint: "admin.faq.list",
       group: "admin",
-    }),
+    });
+  },
 
-  get: (storeId: number | string, faqId: number | string): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/faq/${faqId}/`, {
+  get: (
+    storeIdOrFaqId: number | string,
+    faqId?: number | string,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, value: resolvedFaqId } = resolveTwoArgStoreCall(
+      http,
+      storeIdOrFaqId,
+      faqId,
+    );
+    return http.request(`${ownerBase(storeId)}/faq/${resolvedFaqId}/`, {
       cache: "no-store",
       endpoint: "admin.faq.get",
       group: "admin",
-    }),
+    });
+  },
 
-  create: (storeId: number | string, payload: unknown): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/faq/`, {
+  create: (
+    storeIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, value } = resolveTwoArgStoreCall(http, storeIdOrPayload, payload);
+    return http.request(`${ownerBase(storeId)}/faq/`, {
       method: "POST",
-      body: payload,
+      body: value,
       endpoint: "admin.faq.create",
       group: "admin",
-    }),
+    });
+  },
 
   update: (
-    storeId: number | string,
-    faqId: number | string,
-    payload: unknown,
-  ): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/faq/${faqId}/`, {
+    storeIdOrFaqId: number | string,
+    faqIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, second: faqId, third: resolvedPayload } = resolveThreeArgStoreCall(
+      http,
+      storeIdOrFaqId,
+      faqIdOrPayload,
+      payload,
+    );
+    return http.request(`${ownerBase(storeId)}/faq/${faqId}/`, {
       method: "PATCH",
-      body: payload,
+      body: resolvedPayload,
       endpoint: "admin.faq.update",
       group: "admin",
-    }),
+    });
+  },
 
-  delete: (storeId: number | string, faqId: number | string): Promise<ApisResult<null>> =>
-    http.request<null>(`${ownerBase(storeId)}/faq/${faqId}/`, {
+  delete: (
+    storeIdOrFaqId: number | string,
+    faqId?: number | string,
+  ): Promise<ApisResult<null>> => {
+    const { storeId, value: resolvedFaqId } = resolveTwoArgStoreCall(
+      http,
+      storeIdOrFaqId,
+      faqId,
+    );
+    return http.request<null>(`${ownerBase(storeId)}/faq/${resolvedFaqId}/`, {
       method: "DELETE",
       endpoint: "admin.faq.delete",
       group: "admin",
-    }),
+    });
+  },
 
-  reorderPriority: (storeId: number | string, payload: unknown): Promise<ApisResult<unknown>> =>
-    http.request(`service/owner/store/${storeId}/faq/update_listing_priority/`, {
+  reorderPriority: (
+    storeIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, value } = resolveTwoArgStoreCall(http, storeIdOrPayload, payload);
+    return http.request(`service/owner/store/${storeId}/faq/update_listing_priority/`, {
       method: "POST",
-      body: payload,
+      body: value,
       endpoint: "admin.faq.reorderPriority",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -246,13 +312,15 @@ export const createAdminProductOptionsApi = (http: ApisHttpClient) => ({
     storeId,
     query,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     query: string;
-  }): Promise<ApisResult<unknown>> =>
-    http.request(`${ownerBase(storeId)}/product-option?search=${encodeURIComponent(query)}`, {
+  }): Promise<ApisResult<unknown>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request(`${ownerBase(id)}/product-option?search=${encodeURIComponent(query)}`, {
       endpoint: "admin.productOptions.search",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**

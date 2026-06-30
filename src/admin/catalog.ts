@@ -1,4 +1,5 @@
 import type { ApisHttpClient } from "../client/http-client.js";
+import { resolveStoreId, resolveTwoArgStoreCall } from "../client/resolve-store-id.js";
 import type { ApisResult } from "../client/types.js";
 import type {
   TAddon,
@@ -34,13 +35,18 @@ export const createAdminStoresApi = (http: ApisHttpClient) => ({
    * @endpoint PATCH service/owner/store/{id}
    * @auth Required
    */
-  update: (storeId: number | string, payload: unknown): Promise<ApisResult<TStore>> =>
-    http.request<TStore>(`service/owner/store/${storeId}`, {
+  update: (
+    storeIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<TStore>> => {
+    const { storeId, value } = resolveTwoArgStoreCall(http, storeIdOrPayload, payload);
+    return http.request<TStore>(`service/owner/store/${storeId}`, {
       method: "PATCH",
-      body: payload,
+      body: value,
       endpoint: "admin.stores.update",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -53,69 +59,79 @@ export const createAdminProductsApi = (http: ApisHttpClient) => ({
     offset = 0,
     limit,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     offset?: number;
     limit?: number;
-  }): Promise<ApisResult<TListResponse<TProduct>>> =>
-    http.request<TListResponse<TProduct>>(
-      `${ownerBase(storeId)}/product/?limit=${limit ?? http.pageSize}&offset=${offset}`,
+  } = {}): Promise<ApisResult<TListResponse<TProduct>>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TListResponse<TProduct>>(
+      `${ownerBase(id)}/product/?limit=${limit ?? http.pageSize}&offset=${offset}`,
       { endpoint: "admin.products.list", group: "admin" },
-    ),
+    );
+  },
 
   get: ({
     storeId,
     productId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     productId: number | string;
-  }): Promise<ApisResult<TProduct>> =>
-    http.request<TProduct>(`${ownerBase(storeId)}/product/${productId}/`, {
+  }): Promise<ApisResult<TProduct>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TProduct>(`${ownerBase(id)}/product/${productId}/`, {
       endpoint: "admin.products.get",
       group: "admin",
-    }),
+    });
+  },
 
   create: ({
     storeId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     body: TProductPayload;
-  }): Promise<ApisResult<TProduct>> =>
-    http.request<TProduct>(`${ownerBase(storeId)}/product/`, {
+  }): Promise<ApisResult<TProduct>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TProduct>(`${ownerBase(id)}/product/`, {
       method: "POST",
       body,
       endpoint: "admin.products.create",
       group: "admin",
-    }),
+    });
+  },
 
   update: ({
     storeId,
     productId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     productId: number | string;
     body: Partial<TProductPayload>;
-  }): Promise<ApisResult<TProduct>> =>
-    http.request<TProduct>(`${ownerBase(storeId)}/product/${productId}/`, {
+  }): Promise<ApisResult<TProduct>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TProduct>(`${ownerBase(id)}/product/${productId}/`, {
       method: "PATCH",
       body,
       endpoint: "admin.products.update",
       group: "admin",
-    }),
+    });
+  },
 
   delete: ({
     storeId,
     productId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     productId: number | string;
-  }): Promise<ApisResult<null>> =>
-    http.request<null>(`${ownerBase(storeId)}/product/${productId}/`, {
+  }): Promise<ApisResult<null>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<null>(`${ownerBase(id)}/product/${productId}/`, {
       method: "DELETE",
       endpoint: "admin.products.delete",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -128,69 +144,79 @@ export const createAdminCategoriesApi = (http: ApisHttpClient) => ({
     offset = 0,
     limit,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     offset?: number;
     limit?: number;
-  }): Promise<ApisResult<TListResponse<TCategory>>> =>
-    http.request<TListResponse<TCategory>>(
-      `${ownerBase(storeId)}/category/?limit=${limit ?? http.pageSize}&offset=${offset}`,
+  } = {}): Promise<ApisResult<TListResponse<TCategory>>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TListResponse<TCategory>>(
+      `${ownerBase(id)}/category/?limit=${limit ?? http.pageSize}&offset=${offset}`,
       { endpoint: "admin.categories.list", group: "admin" },
-    ),
+    );
+  },
 
   get: ({
     storeId,
     categoryId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     categoryId: number | string;
-  }): Promise<ApisResult<TCategory>> =>
-    http.request<TCategory>(`${ownerBase(storeId)}/category/${categoryId}/`, {
+  }): Promise<ApisResult<TCategory>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TCategory>(`${ownerBase(id)}/category/${categoryId}/`, {
       endpoint: "admin.categories.get",
       group: "admin",
-    }),
+    });
+  },
 
   create: ({
     storeId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     body: unknown;
-  }): Promise<ApisResult<TCategory>> =>
-    http.request<TCategory>(`${ownerBase(storeId)}/category/`, {
+  }): Promise<ApisResult<TCategory>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TCategory>(`${ownerBase(id)}/category/`, {
       method: "POST",
       body,
       endpoint: "admin.categories.create",
       group: "admin",
-    }),
+    });
+  },
 
   update: ({
     storeId,
     categoryId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     categoryId: number | string;
     body: unknown;
-  }): Promise<ApisResult<TCategory>> =>
-    http.request<TCategory>(`${ownerBase(storeId)}/category/${categoryId}/`, {
+  }): Promise<ApisResult<TCategory>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TCategory>(`${ownerBase(id)}/category/${categoryId}/`, {
       method: "PATCH",
       body,
       endpoint: "admin.categories.update",
       group: "admin",
-    }),
+    });
+  },
 
   delete: ({
     storeId,
     categoryId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     categoryId: number | string;
-  }): Promise<ApisResult<null>> =>
-    http.request<null>(`${ownerBase(storeId)}/category/${categoryId}/`, {
+  }): Promise<ApisResult<null>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<null>(`${ownerBase(id)}/category/${categoryId}/`, {
       method: "DELETE",
       endpoint: "admin.categories.delete",
       group: "admin",
-    }),
+    });
+  },
 });
 
 /**
@@ -203,79 +229,91 @@ export const createAdminAddonsApi = (http: ApisHttpClient) => ({
     offset = 0,
     limit,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     offset?: number;
     limit?: number;
-  }): Promise<ApisResult<TListResponse<TAddon>>> =>
-    http.request<TListResponse<TAddon>>(
-      `${ownerBase(storeId)}/addon/?limit=${limit ?? http.pageSize}&offset=${offset}`,
+  } = {}): Promise<ApisResult<TListResponse<TAddon>>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TListResponse<TAddon>>(
+      `${ownerBase(id)}/addon/?limit=${limit ?? http.pageSize}&offset=${offset}`,
       { endpoint: "admin.addons.list", group: "admin" },
-    ),
+    );
+  },
 
   get: ({
     storeId,
     addonId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     addonId: number | string;
-  }): Promise<ApisResult<TAddon>> =>
-    http.request<TAddon>(`${ownerBase(storeId)}/addon/${addonId}/`, {
+  }): Promise<ApisResult<TAddon>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TAddon>(`${ownerBase(id)}/addon/${addonId}/`, {
       endpoint: "admin.addons.get",
       group: "admin",
-    }),
+    });
+  },
 
   create: ({
     storeId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     body: unknown;
-  }): Promise<ApisResult<TAddon>> =>
-    http.request<TAddon>(`${ownerBase(storeId)}/addon/`, {
+  }): Promise<ApisResult<TAddon>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TAddon>(`${ownerBase(id)}/addon/`, {
       method: "POST",
       body,
       endpoint: "admin.addons.create",
       group: "admin",
-    }),
+    });
+  },
 
   update: ({
     storeId,
     addonId,
     body,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     addonId: number | string;
     body: unknown;
-  }): Promise<ApisResult<TAddon>> =>
-    http.request<TAddon>(`${ownerBase(storeId)}/addon/${addonId}/`, {
+  }): Promise<ApisResult<TAddon>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TAddon>(`${ownerBase(id)}/addon/${addonId}/`, {
       method: "PATCH",
       body,
       endpoint: "admin.addons.update",
       group: "admin",
-    }),
+    });
+  },
 
   delete: ({
     storeId,
     addonId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     addonId: number | string;
-  }): Promise<ApisResult<null>> =>
-    http.request<null>(`${ownerBase(storeId)}/addon/${addonId}/`, {
+  }): Promise<ApisResult<null>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<null>(`${ownerBase(id)}/addon/${addonId}/`, {
       method: "DELETE",
       endpoint: "admin.addons.delete",
       group: "admin",
-    }),
+    });
+  },
 
   forProduct: ({
     storeId,
     productId,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     productId: number | string;
-  }): Promise<ApisResult<TProductDetails>> =>
-    http.request<TProductDetails>(`${ownerBase(storeId)}/product/${productId}`, {
+  }): Promise<ApisResult<TProductDetails>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TProductDetails>(`${ownerBase(id)}/product/${productId}`, {
       endpoint: "admin.addons.forProduct",
       group: "admin",
-    }),
+    });
+  },
 });

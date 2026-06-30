@@ -14,6 +14,7 @@ export type {
   ApisUnauthorizedContext,
   ApisApiGroup,
 } from "./client/types.js";
+export { ApisStoreIdRequiredError } from "./client/types.js";
 
 export { createSharedApi } from "./shared/index.js";
 export { createStorefrontApi } from "./storefront/index.js";

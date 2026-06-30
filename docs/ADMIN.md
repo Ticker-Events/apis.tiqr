@@ -2,17 +2,40 @@
 
 Store owner dashboard APIs under `tiqr.admin.*` — backend prefix `service/owner/store/*`.
 
+## Default store
+
+With `defaultStoreId` on the client, omit `storeId` from object-param methods. Positional methods use smart arity:
+
+| Method | With default | Override |
+|--------|--------------|----------|
+| `faq.get(storeId, faqId)` | `get(faqId)` | `get(storeId, faqId)` |
+| `faq.delete(storeId, faqId)` | `delete(faqId)` | `delete(storeId, faqId)` |
+| `availability.save(storeId, payload)` | `save(payload)` | `save(storeId, payload)` |
+| `stores.update(storeId, payload)` | `update(payload)` | `update(storeId, payload)` |
+
 ```typescript
 import { tiqrClient } from "./apis-client";
 
+// With defaultStoreId configured
+const products = await tiqrClient.admin.products.list({ offset: 0 });
+await tiqrClient.admin.products.create({ body: productPayload });
+const template = await tiqrClient.admin.availability.getLatestConfig();
+await tiqrClient.admin.availability.save(availabilityConfig);
+const faq = await tiqrClient.admin.faq.get(faqId);
+
+// Override for a different store
+await tiqrClient.admin.products.list({ storeId: otherStoreId, offset: 0 });
+```
+
+Without `defaultStoreId`, pass `storeId` explicitly:
+
+```typescript
 const storeId = 1;
 
-// Catalog management
 const products = await tiqrClient.admin.products.list({ storeId, offset: 0 });
 await tiqrClient.admin.products.create({ storeId, body: productPayload });
 await tiqrClient.admin.categories.create({ storeId, body: categoryPayload });
 
-// Orders
 const orders = await tiqrClient.admin.orders.listFiltered({
   storeId,
   filters: { status: ["pending"] },
@@ -21,18 +44,15 @@ const orders = await tiqrClient.admin.orders.listFiltered({
 });
 await tiqrClient.admin.orders.update({ storeId, orderId: 42, payload: { status: "completed" } });
 
-// Scheduling
 const template = await tiqrClient.admin.availability.getLatestConfig(storeId);
 await tiqrClient.admin.availability.save(storeId, availabilityConfig);
 
-// Dashboard
 const summary = await tiqrClient.admin.dashboard.orderSummary({
   storeId,
   startDate: "2026-01-01",
   endDate: "2026-01-31",
 });
 
-// Media & messaging
 await tiqrClient.admin.media.uploadImage(file, "products/");
 await tiqrClient.admin.messaging.whatsapp.send({ /* WA payload */ });
 ```

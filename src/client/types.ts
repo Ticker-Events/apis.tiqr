@@ -61,7 +61,18 @@ export type ApisClientConfig = {
   baseUrl: string;
   getAccessToken?: () => string | null | Promise<string | null>;
   pageSize?: number;
+  /** Default store for store-scoped APIs. Per-call storeId overrides this. */
+  defaultStoreId?: number | string;
   onUnauthorized?: (ctx: ApisUnauthorizedContext) => void;
   fetch?: typeof fetch;
   logging?: ApisLoggingConfig;
 };
+
+export class ApisStoreIdRequiredError extends Error {
+  constructor() {
+    super(
+      "storeId is required. Pass it to the API call or set defaultStoreId in createApisClient.",
+    );
+    this.name = "ApisStoreIdRequiredError";
+  }
+}

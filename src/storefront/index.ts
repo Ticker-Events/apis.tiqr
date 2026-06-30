@@ -1,4 +1,9 @@
 import type { ApisHttpClient } from "../client/http-client.js";
+import {
+  resolveStoreId,
+  resolveThreeArgStoreCall,
+  resolveTwoArgStoreCall,
+} from "../client/resolve-store-id.js";
 import type { ApisResult } from "../client/types.js";
 import type {
   TCart,
@@ -27,8 +32,8 @@ export const createStorefrontStoresApi = (http: ApisHttpClient) => ({
    * @endpoint GET service/buyer/store/{storeId}
    * @auth None
    */
-  get: (storeId: number | string): Promise<ApisResult<TStore>> =>
-    http.request<TStore>(`service/buyer/store/${storeId}`, {
+  get: (storeId?: number | string): Promise<ApisResult<TStore>> =>
+    http.request<TStore>(`service/buyer/store/${resolveStoreId(http, storeId)}`, {
       auth: false,
       endpoint: "storefront.stores.get",
       group: "storefront",
@@ -50,18 +55,20 @@ export const createStorefrontCategoriesApi = (http: ApisHttpClient) => ({
     limit,
     offset = 0,
   }: {
-    storeId: number | string;
+    storeId?: number | string;
     limit?: number;
     offset?: number;
-  }): Promise<ApisResult<TListResponse<TCategory>>> =>
-    http.request<TListResponse<TCategory>>(
-      `service/buyer/store/${storeId}/category/?limit=${limit ?? http.pageSize}&offset=${offset}`,
+  } = {}): Promise<ApisResult<TListResponse<TCategory>>> => {
+    const id = resolveStoreId(http, storeId);
+    return http.request<TListResponse<TCategory>>(
+      `service/buyer/store/${id}/category/?limit=${limit ?? http.pageSize}&offset=${offset}`,
       {
         auth: false,
         endpoint: "storefront.categories.list",
         group: "storefront",
       },
-    ),
+    );
+  },
 });
 
 /**
@@ -80,13 +87,14 @@ export const createStorefrontProductsApi = (http: ApisHttpClient) => ({
     limit,
     offset = 0,
   }: {
-    storeId: number;
+    storeId?: number;
     categoryId?: number;
     limit?: number;
     offset?: number;
-  }): Promise<ApisResult<TListResponse<TProduct>>> => {
+  } = {}): Promise<ApisResult<TListResponse<TProduct>>> => {
+    const id = resolveStoreId(http, storeId);
     const queryParams = new URLSearchParams({
-      store_id: String(storeId),
+      store_id: String(id),
       limit: String(limit ?? http.pageSize),
       offset: String(offset),
     });
@@ -291,18 +299,25 @@ export const createStorefrontAppointmentsApi = (http: ApisHttpClient) => ({
    * @auth None
    */
   getMonthlySlots: (
-    storeId: number | string,
-    month: string | number,
-    year: string | number,
-  ): Promise<ApisResult<unknown>> =>
-    http.request(
-      `service/buyer/store/${storeId}/availability/available-slots/?month=${month}&year=${year}`,
+    storeIdOrMonth: number | string,
+    monthOrYear?: string | number,
+    year?: string | number,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, second: month, third: resolvedYear } = resolveThreeArgStoreCall(
+      http,
+      storeIdOrMonth,
+      monthOrYear ?? "",
+      year,
+    );
+    return http.request(
+      `service/buyer/store/${storeId}/availability/available-slots/?month=${month}&year=${resolvedYear}`,
       {
         auth: false,
         endpoint: "storefront.appointments.getMonthlySlots",
         group: "storefront",
       },
-    ),
+    );
+  },
 
   /**
    * Get available slots for a date range.
@@ -310,32 +325,44 @@ export const createStorefrontAppointmentsApi = (http: ApisHttpClient) => ({
    * @auth None
    */
   getPeriodSlots: (
-    storeId: number | string,
-    startDate: string,
-    endDate: string,
-  ): Promise<ApisResult<unknown>> =>
-    http.request(
-      `service/buyer/store/${storeId}/availability/available-slots/?start_date=${startDate}&end_date=${endDate}`,
+    storeIdOrStartDate: number | string,
+    startDateOrEndDate?: string,
+    endDate?: string,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, second: startDate, third: resolvedEndDate } = resolveThreeArgStoreCall(
+      http,
+      storeIdOrStartDate,
+      startDateOrEndDate ?? "",
+      endDate,
+    );
+    return http.request(
+      `service/buyer/store/${storeId}/availability/available-slots/?start_date=${startDate}&end_date=${resolvedEndDate}`,
       {
         auth: false,
         endpoint: "storefront.appointments.getPeriodSlots",
         group: "storefront",
       },
-    ),
+    );
+  },
 
   /**
    * Submit an appointment slot enquiry.
    * @endpoint POST service/buyer/store/{id}/availability/enquiry-slot/
    * @auth None
    */
-  enquireSlot: (storeId: number | string, payload: unknown): Promise<ApisResult<unknown>> =>
-    http.request(`service/buyer/store/${storeId}/availability/enquiry-slot/`, {
+  enquireSlot: (
+    storeIdOrPayload: number | string | unknown,
+    payload?: unknown,
+  ): Promise<ApisResult<unknown>> => {
+    const { storeId, value } = resolveTwoArgStoreCall(http, storeIdOrPayload, payload);
+    return http.request(`service/buyer/store/${storeId}/availability/enquiry-slot/`, {
       method: "POST",
-      body: payload,
+      body: value,
       auth: false,
       endpoint: "storefront.appointments.enquireSlot",
       group: "storefront",
-    }),
+    });
+  },
 });
 
 export const createStorefrontApi = (http: ApisHttpClient) => ({

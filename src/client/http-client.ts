@@ -1,4 +1,5 @@
 import { createLog, redactBody, resolveLoggingConfig } from "./logger.js";
+import { resolveStoreId as resolveStoreIdFromConfig } from "./resolve-store-id.js";
 import type {
   ApisClientConfig,
   ApisRequestOptions,
@@ -13,22 +14,34 @@ const LOGOUT_BYPASSED_PATHS = [
 ];
 
 export class ApisHttpClient {
+  private readonly clientConfig: ApisClientConfig;
   private readonly baseUrl: string;
   private readonly getAccessToken?: ApisClientConfig["getAccessToken"];
   readonly pageSize: number;
+  readonly defaultStoreId?: number | string;
   private readonly onUnauthorized?: ApisClientConfig["onUnauthorized"];
   private readonly fetchFn: typeof fetch;
   private readonly log: ReturnType<typeof createLog>;
   private readonly loggingConfig: ReturnType<typeof resolveLoggingConfig>;
 
   constructor(config: ApisClientConfig) {
+    this.clientConfig = config;
     this.baseUrl = normalizeBaseUrl(config.baseUrl);
     this.getAccessToken = config.getAccessToken;
     this.pageSize = config.pageSize ?? 20;
+    this.defaultStoreId = config.defaultStoreId;
     this.onUnauthorized = config.onUnauthorized;
     this.fetchFn = config.fetch ?? globalThis.fetch.bind(globalThis);
     this.loggingConfig = resolveLoggingConfig(config.logging);
     this.log = createLog(this.loggingConfig);
+  }
+
+  resolveStoreId(storeId?: number | string): number | string {
+    return resolveStoreIdFromConfig(this, storeId);
+  }
+
+  withDefaultStore(storeId: number | string): ApisHttpClient {
+    return new ApisHttpClient({ ...this.clientConfig, defaultStoreId: storeId });
   }
 
   buildUrl(path: string): string {

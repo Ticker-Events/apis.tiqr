@@ -2,24 +2,32 @@
 
 Buyer-facing APIs under `tiqr.storefront.*` — backend prefix `service/buyer/*`.
 
+## Default store
+
+Set `defaultStoreId` when creating the client for single-store sites. Object-param methods accept optional `storeId`; positional methods use smart arity when the default is set.
+
 ```typescript
 import { tiqrClient } from "./apis-client";
 
-// Public store page
+// With defaultStoreId configured — storeId omitted
+const store = await tiqrClient.storefront.stores.get();
+const products = await tiqrClient.storefront.products.list({ offset: 0 });
+const slots = await tiqrClient.storefront.appointments.getMonthlySlots(6, 2026);
+await tiqrClient.storefront.appointments.enquireSlot({ /* slot enquiry */ });
+
+// Override for a different store
+const otherProducts = await tiqrClient.storefront.products.list({
+  storeId: otherStoreId,
+  offset: 0,
+});
+const otherSlots = await tiqrClient.storefront.appointments.getMonthlySlots(otherStoreId, 6, 2026);
+```
+
+Without `defaultStoreId`, pass `storeId` explicitly as before:
+
+```typescript
 const store = await tiqrClient.storefront.stores.get(storeId);
 const products = await tiqrClient.storefront.products.list({ storeId, offset: 0 });
-const product = await tiqrClient.storefront.products.get(productId);
-
-// Authenticated shopper
-const cart = await tiqrClient.storefront.cart.get();
-await tiqrClient.storefront.cart.addItem({ /* item */ });
-await tiqrClient.storefront.cart.checkout({ /* checkout payload */ });
-
-// Orders
-const orders = await tiqrClient.storefront.orders.list({ sortBy: "newest_first", offset: 0 });
-const order = await tiqrClient.storefront.orders.get(orderUuid);
-
-// Appointments
 const slots = await tiqrClient.storefront.appointments.getMonthlySlots(storeId, 6, 2026);
 await tiqrClient.storefront.appointments.enquireSlot(storeId, { /* slot enquiry */ });
 ```
@@ -29,11 +37,25 @@ await tiqrClient.storefront.appointments.enquireSlot(storeId, { /* slot enquiry 
 ```typescript
 import { tiqrServer } from "@/utils/lib/api/apis-server";
 
-export default async function StorePage({ params }) {
-  const { data: store } = await tiqrServer.storefront.stores.get(params.storeId);
-  const { data: products } = await tiqrServer.storefront.products.list({ storeId: params.storeId });
+export default async function StorePage() {
+  // defaultStoreId set on tiqrServer — no storeId per call
+  const { data: store } = await tiqrServer.storefront.stores.get();
+  const { data: products } = await tiqrServer.storefront.products.list();
   // ...
 }
+```
+
+## Common calls (no store scoping)
+
+```typescript
+const product = await tiqrClient.storefront.products.get(productId);
+
+const cart = await tiqrClient.storefront.cart.get();
+await tiqrClient.storefront.cart.addItem({ /* item */ });
+await tiqrClient.storefront.cart.checkout({ /* checkout payload */ });
+
+const orders = await tiqrClient.storefront.orders.list({ sortBy: "newest_first", offset: 0 });
+const order = await tiqrClient.storefront.orders.get(orderUuid);
 ```
 
 ## Endpoints
