@@ -1,7 +1,7 @@
 {
   "name": "apis.tiqr",
   "version": "0.1.0",
-  "description": "TypeScript SDK for TiQR Store REST APIs — storefront and admin",
+  "description": "TypeScript SDK for TiQR Store and Events REST APIs — storefront, admin, and participant",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -35,6 +35,11 @@
       "types": "./dist/shared/index.d.ts",
       "import": "./dist/shared/index.js",
       "require": "./dist/shared/index.cjs"
+    },
+    "./participant": {
+      "types": "./dist/participant/index.d.ts",
+      "import": "./dist/participant/index.js",
+      "require": "./dist/participant/index.cjs"
     }
   },
   "files": [
@@ -56,16 +61,19 @@
     "@types/tiqr": "github:Ticker-Events/types.tiqr"
   },
   "devDependencies": {
+    "@types/tiqr": "github:Ticker-Events/types.tiqr#feat/participant-event-types",
     "tsup": "^8.4.0",
-    "typescript": "^5.8.2",
-    "@types/tiqr": "github:Ticker-Events/types.tiqr"
+    "typescript": "^5.8.2"
   },
   "keywords": [
     "tiqr",
     "api",
     "sdk",
     "storefront",
-    "ecommerce"
+    "ecommerce",
+    "events",
+    "participant",
+    "bookings"
   ],
   "license": "MIT"
 }

@@ -1,6 +1,6 @@
 export type ApisLogLevel = "debug" | "info" | "warn" | "error" | "silent";
 
-export type ApisApiGroup = "storefront" | "admin" | "shared";
+export type ApisApiGroup = "storefront" | "admin" | "shared" | "participant";
 
 export type ApisLogger = (entry: ApisLogEntry) => void;
 

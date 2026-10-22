@@ -1,6 +1,6 @@
 # apis.tiqr
 
-TypeScript SDK for TiQR Store REST APIs. Connect to the TiQR backend from any Next.js project — server components, server actions, and client components.
+TypeScript SDK for TiQR **Store** and **Events** REST APIs. Connect to the TiQR backend from any Next.js project — server components, server actions, and client components.
 
 ## Install
 
@@ -121,6 +121,10 @@ import { tiqrClient } from "@/utils/lib/api/apis-client";
 const { data: cart, ok } = await tiqrClient.storefront.cart.get();
 const { data: products } = await tiqrClient.storefront.products.list({ storeId: 1, offset: 0 });
 const { data: orders } = await tiqrClient.admin.orders.list({ storeId: 1 });
+
+// Events (participant)
+const { data: events } = await tiqrClient.participant.events.list({ sort_by: "start_date" });
+const { data: event } = await tiqrClient.participant.events.get(eventId);
 ```
 
 ## API groups
@@ -130,11 +134,13 @@ const { data: orders } = await tiqrClient.admin.orders.list({ storeId: 1 });
 | **Shared** | `tiqr.auth`, `tiqr.customer` | Login token exchange, user profile, addresses |
 | **Storefront** | `tiqr.storefront` | Shopper-facing: catalog, cart, checkout, orders |
 | **Admin** | `tiqr.admin` | Store owner dashboard: products, orders, scheduling |
+| **Participant** | `tiqr.participant` | Events attendee: event list/detail, tickets, discounts, bookings |
 
 See [docs/API.md](./docs/API.md) for the full endpoint reference.
 
 - [Storefront APIs](./docs/STOREFRONT.md)
 - [Admin APIs](./docs/ADMIN.md)
+- [Participant (Events) APIs](./docs/PARTICIPANT.md)
 
 ## Subpath imports
 
@@ -142,6 +148,7 @@ See [docs/API.md](./docs/API.md) for the full endpoint reference.
 import { createStorefrontApi } from "apis.tiqr/storefront";
 import { createAdminApi } from "apis.tiqr/admin";
 import { createSharedApi } from "apis.tiqr/shared";
+import { createParticipantApi } from "apis.tiqr/participant";
 import { createBrowserClient } from "apis.tiqr/browser";
 ```
 

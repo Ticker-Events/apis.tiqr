@@ -1,10 +1,10 @@
 # API Reference
 
-Full endpoint reference for `apis.tiqr`, grouped by **Shared**, **Storefront**, and **Admin**.
+Full endpoint reference for `apis.tiqr`, grouped by **Shared**, **Storefront**, **Admin**, and **Participant**.
 
 All methods return `Promise<ApisResult<T>>`.
 
-Store-scoped methods accept an optional `storeId` when `defaultStoreId` is set on the client at creation. Per-call `storeId` always overrides the default. See [README](../README.md#single-store-site-optional).
+Store-scoped methods accept an optional `storeId` when `defaultStoreId` is set on the client at creation. Per-call `storeId` always overrides the default. See [README](../README.md#single-store-site-optional). Participant (Events) APIs are not store-scoped.
 
 ---
 
@@ -135,3 +135,49 @@ CRUD pattern: `list`, `get`, `create`, `update`, `delete`
 | `media.uploadImage(file, path?)` | POST | `participant/media/` | No |
 | `media.uploadConversationFile(file, type, path?)` | POST | `participant/conversation_media/` | No |
 | `messaging.whatsapp.send(payload)` | POST | `conversation/wa-message/` | Yes |
+
+---
+
+## Participant — `tiqr.participant`
+
+Backend prefix: `participant/*` (Events discovery, tickets, discounts, bookings).
+
+See [PARTICIPANT.md](./PARTICIPANT.md) for usage recipes.
+
+### Events
+
+| Method | HTTP | Path | Auth | Types |
+|--------|------|------|------|-------|
+| `events.list(params?)` | GET | `participant/event/` | No | `TListResponse<TEventListItem>` |
+| `events.get(eventId)` | GET | `participant/event/{id}/` | No | `TTickerEvent` (includes `tickets`) |
+| `events.highlighted()` | GET | `participant/event/hightlighted/` | No | `TEventListItem[]` |
+| `events.summary()` | GET | `participant/event/summary/` | No | `TGenreSummary[]` |
+| `events.shows(eventId)` | GET | `participant/event/{id}/shows/` | No | `TListResponse<TEventListItem>` |
+| `events.seatConfiguration(eventId)` | GET | `participant/event/{id}/seat_configuration/` | No | `TSeatConfigurationResponse` |
+
+### Tickets
+
+There is no separate tickets list endpoint — use `events.get(eventId).data.tickets`.
+
+| Method | HTTP | Path | Auth | Types |
+|--------|------|------|------|-------|
+| `tickets.get(eventId, ticketId)` | GET | `participant/event/{eventId}/ticket/{ticketId}/` | No | `TTicketResponse` |
+
+### Discounts
+
+Flat/group discounts are also embedded on each ticket as `available_discounts`.
+
+| Method | HTTP | Path | Auth | Types |
+|--------|------|------|------|-------|
+| `discounts.validateCoupon({ eventId, code, ticketId, quantity })` | GET | `participant/event/{eventId}/discount_coupon/{code}/?ticket_id=&quantity=` | No | `TDiscountCoupon` |
+
+### Bookings
+
+| Method | HTTP | Path | Auth | Types |
+|--------|------|------|------|-------|
+| `bookings.create(payload, { authenticated? })` | POST | `participant/booking/` | Optional | `TBookingCreateResponse` |
+| `bookings.createBulk(payload)` | POST | `participant/booking/bulk/` | No | `TBookingCreateResponse` |
+| `bookings.get(uid)` | GET | `participant/booking/{uid}/` | No | `TUserBooking` |
+| `bookings.list()` | GET | `participant/booking/` | Yes | `TListResponse<TUserBooking>` |
+| `bookings.search({ phoneNumber })` | GET | `participant/booking/search/?phone_number=` | No | `{ results: TUserBooking[] }` |
+| `bookings.retryPayment(uid)` | POST | `participant/booking/{uid}/retry_payment/` | No | `TBookingCreateResponse` |
