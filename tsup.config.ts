@@ -7,6 +7,7 @@ export default defineConfig({
     "storefront/index": "src/storefront/index.ts",
     "admin/index": "src/admin/index.ts",
     "shared/index": "src/shared/index.ts",
+    "participant/index": "src/participant/index.ts",
   },
   format: ["esm", "cjs"],
   dts: true,

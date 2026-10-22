@@ -19,3 +19,4 @@ export { ApisStoreIdRequiredError } from "./client/types.js";
 export { createSharedApi } from "./shared/index.js";
 export { createStorefrontApi } from "./storefront/index.js";
 export { createAdminApi } from "./admin/index.js";
+export { createParticipantApi } from "./participant/index.js";
