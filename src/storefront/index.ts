@@ -22,6 +22,44 @@ const ORDER_SORT_PARAMS: Record<string, string> = {
   newest_first: "-created_at",
 };
 
+type TCartLinePayload = {
+  product_option: number;
+  quantity: number;
+};
+
+function normalizeCartLinePayload(
+  item: unknown,
+  defaultQuantity = 0,
+): TCartLinePayload {
+  if (typeof item === "number") {
+    return { product_option: item, quantity: defaultQuantity };
+  }
+
+  if (item == null || typeof item !== "object") {
+    throw new Error("Invalid cart line item");
+  }
+
+  const record = item as Record<string, unknown>;
+
+  if (typeof record.product_option === "number") {
+    return {
+      product_option: record.product_option,
+      quantity:
+        typeof record.quantity === "number" ? record.quantity : defaultQuantity,
+    };
+  }
+
+  const productOption = record.product_option;
+  if (productOption != null && typeof productOption === "object") {
+    const optionId = (productOption as { id?: number }).id;
+    if (typeof optionId === "number") {
+      return { product_option: optionId, quantity: defaultQuantity };
+    }
+  }
+
+  throw new Error("Cart line item must include a product_option id");
+}
+
 /**
  * Storefront store endpoints.
  * @group storefront
@@ -179,7 +217,9 @@ export const createStorefrontCartApi = (http: ApisHttpClient) => ({
   removeItems: (cartItems: unknown[]): Promise<ApisResult<unknown>> =>
     http.request("service/buyer/cart/", {
       method: "POST",
-      body: { cart_items: cartItems },
+      body: {
+        cart_items: cartItems.map((item) => normalizeCartLinePayload(item, 0)),
+      },
       endpoint: "storefront.cart.removeItems",
       group: "storefront",
     }),
